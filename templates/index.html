@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>{{ config.title }}</title>
+  <meta name="description" content="{{ config.description }}">
+  <meta name="theme-color" content="#241773">
+  <meta property="og:title" content="{{ config.title }} 🐦‍⬛💜">
+  <meta property="og:description" content="{{ config.description }}">
+  <meta property="og:image" content="{{ get_url(path='img/og.jpg') }}">
+  <meta property="og:url" content="{{ config.base_url }}/">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏈</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Bungee+Shade&family=Comic+Neue:wght@700&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+  <link rel="stylesheet" href="{{ get_url(path='css/style.css', cachebust=true) }}">
+</head>
+<body>
+  <canvas id="fx" aria-hidden="true"></canvas>
+  <div id="flyzone" aria-hidden="true"></div>
+  <div id="hypepop" aria-live="polite"></div>
+
+  <!-- ========== TICKER ========== -->
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker__track">
+      {% set ticker = "🏈 BENGALS @ RAVENS · SUN OCT 25 · 1:00 PM ET · CBS 🏈 💜 THE CREW IS COMING 💜 🐦‍⬛ CAW CAW MOTHER-CAWERS 🐦‍⬛ ✨ TAP THE PHOTO. TAP IT. DO IT. ✨ 🦀 OLD BAY IS A VEGETABLE 🦀 🌈 THIS WEBSITE IS TOO MUCH AND WE KNOW IT 🌈 🐯 TIGERS ARE JUST LARGE HOUSE CATS 🐯 " %}
+      <span>{{ ticker }}</span><span>{{ ticker }}</span>
+    </div>
+  </div>
+
+  <!-- ========== HERO ========== -->
+  <header class="hero">
+    <p class="hero__kicker">An official<sup>*</sup> transmission from the</p>
+    <h1 class="hero__title" data-text="OPERATION: PURPLE SUNDAY">OPERATION:<br>PURPLE SUNDAY</h1>
+    <p class="hero__sub">{{ config.extra.opponent }} @ Baltimore Ravens · {{ config.extra.kickoff_pretty }}</p>
+
+    <figure class="crew" id="crew">
+      <div class="crew__frame">
+        <img src="{{ get_url(path='img/crew.jpg') }}" width="1536" height="1024"
+             alt="The crew: six Ravens fans in #8 jerseys with face stickers, towels and hats, cheering in the stands at M&amp;T Bank Stadium">
+        <div class="crew__shine"></div>
+      </div>
+      <figcaption>
+        <span class="tapme">👆 TAP THE CREW 👆</span>
+        <span class="crew__count">Sparkle deployments: <b id="sparkleCount">0</b></span>
+      </figcaption>
+    </figure>
+    <p class="fineprint"><sup>*</sup>not official. at all. please do not sue us, Steve.</p>
+  </header>
+
+  <main>
+    <!-- ========== COUNTDOWN ========== -->
+    <section class="panel panel--countdown" id="countdown">
+      <h2><span class="emoji">⏳</span> T-MINUS KICKOFF</h2>
+      <div class="clock" id="clock" data-kickoff="{{ config.extra.kickoff }}">
+        <div class="clock__unit"><b id="cdD">--</b><span>days</span></div>
+        <div class="clock__unit"><b id="cdH">--</b><span>hours</span></div>
+        <div class="clock__unit"><b id="cdM">--</b><span>minutes</span></div>
+        <div class="clock__unit"><b id="cdS">--</b><span>seconds</span></div>
+        <div class="clock__unit clock__unit--tiny"><b id="cdC">--</b><span>centi&shy;seconds<br>(yes really)</span></div>
+      </div>
+      <p class="clock__status" id="cdStatus">Calibrating hype sensors…</p>
+      <div class="meter" aria-label="Anticipation meter">
+        <div class="meter__fill" id="weekMeter"></div>
+        <span class="meter__label">Anticipation meter: <b id="weekMeterPct">0</b>% of the way from last Sunday</span>
+      </div>
+
+      <h3>Time remaining, converted into deeply useful units</h3>
+      <ul class="units" id="units"></ul>
+      <p class="baltime">It is currently <b id="balTime">--:--</b> in Baltimore.</p>
+    </section>
+
+    <!-- ========== CHAOS CONTROL ========== -->
+    <section class="panel panel--chaos" id="chaos">
+      <h2><span class="emoji">🎛️</span> CHAOS CONTROL PANEL</h2>
+      <label class="slider">
+        <span>Chaos level: <b id="chaosLabel">MODERATE CAW</b></span>
+        <input type="range" id="chaosLevel" min="0" max="4" step="1" value="2">
+      </label>
+      <div class="buttons">
+        <button class="btn" data-action="sna">🎸 Seven Nation Army</button>
+        <button class="btn" data-action="storm">🐦‍⬛ Raven Storm</button>
+        <button class="btn" data-action="disco">🪩 Disco Mode</button>
+        <button class="btn" data-action="rainbow">🌈 Rainbow Bomb</button>
+        <button class="btn" data-action="crab">🦀 Crab Rave</button>
+        <button class="btn" data-action="comic">🤡 Comic Sans-ify</button>
+        <button class="btn" data-action="flip">🙃 Flip Bengals Upside Down</button>
+        <button class="btn" data-action="mute" id="muteBtn">🔊 Sound: ON</button>
+      </div>
+      <p class="hint">Psst: ↑ ↑ ↓ ↓ ← → ← → B A. Or on a phone, tap the title 8 times. Because #8.</p>
+      <div class="hype">
+        <span>Personal hype level:</span>
+        <div class="hype__bar"><div class="hype__fill" id="hypeFill"></div></div>
+        <b id="hypeLabel">Mild Caw</b>
+      </div>
+    </section>
+
+    <!-- ========== MATCHUP ========== -->
+    <section class="panel" id="matchup">
+      <h2><span class="emoji">⚔️</span> THE MATCHUP</h2>
+      <div class="vs">
+        <div class="team team--home">
+          <div class="team__badge">🐦‍⬛</div>
+          <div class="team__name">Baltimore Ravens</div>
+          <div class="team__rec">{{ config.extra.ravens_record }}</div>
+          <div class="team__tag">Heroes. Legends. Our guys.</div>
+        </div>
+        <div class="vs__x">VS</div>
+        <div class="team team--away" id="bengals">
+          <div class="team__badge">🐯</div>
+          <div class="team__name">Cincinnati Bengals</div>
+          <div class="team__rec">{{ config.extra.bengals_record }}</div>
+          <div class="team__tag">Stripes: unflattering.</div>
+        </div>
+      </div>
+      <p class="small center">Records as of entering {{ config.extra.week }}. AFC North rivals since 2002 (and AFC Central foes before that).</p>
+
+      <div class="cards">
+        <article class="card">
+          <h3>📺 Watch</h3>
+          <p><b>{{ config.extra.tv }}</b> — {{ config.extra.tv_crew }}.</p>
+          <p>Streaming: Paramount+ or NFL+ (local market); NFL Sunday Ticket out of market.</p>
+        </article>
+        <article class="card">
+          <h3>📻 Listen</h3>
+          <p>Ravens Radio Network (via the Ravens app / NFL+ audio). SiriusXM carries the game too.</p>
+          <p>Pro tip: radio in one ear, crowd in the other = maximum stereo hype.</p>
+        </article>
+        <article class="card card--alert">
+          <h3>🚨 Injury Watch</h3>
+          <p>Lamar has been nursing an ankle injury, with Tyler Huntley starting in relief. Watch the Friday injury report &amp; Sunday 11:30 AM inactives.</p>
+        </article>
+        <article class="card">
+          <h3>🏟️ Where</h3>
+          <p><b>{{ config.extra.stadium }}</b><br>{{ config.extra.address }}</p>
+          <p><a href="#map">Jump to the map ↓</a></p>
+        </article>
+      </div>
+    </section>
+
+    <!-- ========== TIMELINE ========== -->
+    <section class="panel" id="timeline">
+      <h2><span class="emoji">🗓️</span> GAMEDAY BATTLE PLAN</h2>
+      <p class="small">All times ET. Stadium times are typical — confirm on the <a href="https://www.baltimoreravens.com/game-day/index" target="_blank" rel="noopener">official Ravens Gameday page</a>.</p>
+      <ol class="tl" id="tl">
+        <li data-t="-300"><time>8:00 AM</time><b>Wake up. Jersey on.</b> Face stickers applied with surgical precision.</li>
+        <li data-t="-240"><time>9:00 AM</time><b>Depart HQ.</b> Snacks loaded. Phones charged. Tickets on phones. Someone double-checks the tickets.</li>
+        <li data-t="-210"><time>~9:30 AM</time><b>Parking lots typically open</b> for tailgating (check your lot's pass).</li>
+        <li data-t="-180"><time>10:00 AM</time><b>UA Landing opens</b> — free pregame fan area, ticket required.</li>
+        <li data-t="-120"><time>~11:00 AM</time><b>Gates typically open.</b> Clear bags only! Get in early, watch warmups.</li>
+        <li data-t="-90"><time>11:30 AM</time><b>Inactives announced.</b> Refresh the injury news nervously.</li>
+        <li data-t="-15"><time>12:45 PM</time><b>Player intros.</b> Scream. Wave towel. Lose voice early.</li>
+        <li data-t="0"><time>1:00 PM</time><b>KICKOFF.</b> 🏈🏈🏈</li>
+        <li data-t="90"><time>~2:30 PM</time><b>Halftime.</b> Crab fries. Hydrate. Re-sticker.</li>
+        <li data-t="195"><time>~4:15 PM</time><b>Final whistle.</b> Victory chant. Smug walk to the car.</li>
+        <li data-t="240"><time>~5:00 PM</time><b>Post-game.</b> Celebratory dinner. Retell every play 40 times.</li>
+      </ol>
+    </section>
+
+    <!-- ========== WEATHER ========== -->
+    <section class="panel" id="weather">
+      <h2><span class="emoji">🌤️</span> LIVE GAMEDAY FORECAST</h2>
+      <p class="small">Pulled live from <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a> for the exact stadium coordinates. Forecasts get sharper as Sunday approaches.</p>
+      <div class="wx" id="wx"><p>Consulting the weather ravens…</p></div>
+      <p class="wx__verdict" id="wxVerdict"></p>
+    </section>
+
+    <!-- ========== MAP ========== -->
+    <section class="panel" id="map">
+      <h2><span class="emoji">🗺️</span> HOW TO GET THERE</h2>
+      <div id="leaflet" class="map" role="region" aria-label="Map of M&amp;T Bank Stadium and nearby points"></div>
+      <div class="buttons buttons--nav">
+        <a class="btn" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=M%26T+Bank+Stadium%2C+1101+Russell+St%2C+Baltimore%2C+MD+21230">🧭 Google Maps</a>
+        <a class="btn" target="_blank" rel="noopener" href="https://maps.apple.com/?daddr=1101+Russell+St,Baltimore,MD+21230&q=M%26T+Bank+Stadium">🍎 Apple Maps</a>
+        <a class="btn" target="_blank" rel="noopener" href="https://waze.com/ul?ll={{ config.extra.lat }},{{ config.extra.lon }}&navigate=yes">🚙 Waze</a>
+      </div>
+      <div class="cards">
+        <article class="card">
+          <h3>🚗 Driving &amp; Parking</h3>
+          <p>Stadium lots require a pre-purchased parking pass. Downtown garages near the Inner Harbor are a 10–20 min walk. Leave early — I-95 and Russell St get <i>spicy</i>.</p>
+        </article>
+        <article class="card">
+          <h3>🚊 Light Rail</h3>
+          <p>MTA Light RailLink stops at <b>Camden Yards</b> and <b>Hamburg Street</b> (right next to the stadium). The easiest way to skip the parking chaos.</p>
+        </article>
+        <article class="card">
+          <h3>🚆 MARC Train</h3>
+          <p>The Camden Line drops you at <b>Camden Station</b>, a short walk north of the stadium. Check MARC's weekend schedule — service varies.</p>
+        </article>
+        <article class="card">
+          <h3>🚶 Walk-up Snacks</h3>
+          <p>Federal Hill and the Inner Harbor are both walkable for pre- and post-game food. Pickles Pub on Washington Blvd is a classic pregame spot.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- ========== SURVIVAL GUIDE ========== -->
+    <section class="panel" id="guide">
+      <h2><span class="emoji">🎒</span> STADIUM SURVIVAL GUIDE</h2>
+      <div class="cards">
+        <article class="card">
+          <h3>👜 Clear Bag Policy</h3>
+          <p>NFL standard: clear bags up to 12″×6″×12″, or a one-gallon clear plastic bag, plus one small clutch about the size of a hand (≈4.5″×6.5″). Diaper bags/medical bags get inspected.</p>
+        </article>
+        <article class="card">
+          <h3>💳 Cashless</h3>
+          <p>M&amp;T Bank Stadium is cashless. Bring cards / phone pay. Cash-to-card kiosks exist if you're vintage.</p>
+        </article>
+        <article class="card">
+          <h3>📱 Tickets</h3>
+          <p>Mobile tickets only — in the Ravens app / Ticketmaster. Add to Wallet the night before. Screenshots don't scan.</p>
+        </article>
+        <article class="card">
+          <h3>👂 For the Kids</h3>
+          <p>It gets LOUD. Earplugs or kids' ear protection are a great idea, especially for 3rd-down defense.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- ========== CHECKLIST ========== -->
+    <section class="panel" id="packing">
+      <h2><span class="emoji">✅</span> THE PACKING LIST</h2>
+      <p class="small">Tap to check off. Saved on your device. Progress: <b id="packPct">0%</b></p>
+      <ul class="pack" id="pack">
+        <li data-k="tix">🎟️ Tickets in phone wallet (and someone else's phone too)</li>
+        <li data-k="jersey">8️⃣ Six (6) #8 jerseys</li>
+        <li data-k="bag">👜 Clear bag (12×6×12 max)</li>
+        <li data-k="battery">🔋 Portable phone battery</li>
+        <li data-k="stickers">🐦‍⬛ Face stickers</li>
+        <li data-k="towels">🟪 Towels for aggressive waving</li>
+        <li data-k="hats">🧢 Hats</li>
+        <li data-k="beads">📿 Purple beads</li>
+        <li data-k="sun">🕶️ Sunglasses + sunscreen</li>
+        <li data-k="layers">🧥 Layers (it's late October)</li>
+        <li data-k="ears">🎧 Ear protection for the kids</li>
+        <li data-k="card">💳 Cards (stadium is cashless)</li>
+        <li data-k="parking">🅿️ Parking pass / transit plan</li>
+        <li data-k="voice">🗣️ A voice, to lose</li>
+      </ul>
+    </section>
+
+    <!-- ========== PREDICTION MACHINE ========== -->
+    <section class="panel panel--slots" id="predict">
+      <h2><span class="emoji">🎰</span> SCIENTIFIC SCORE PREDICTOR 9000</h2>
+      <p class="small">Powered by vibes, a random number generator, and blind loyalty. 100% accuracy not guaranteed. Bengals never win in this machine — it's in the code.</p>
+      <div class="slots">
+        <div class="slot"><span>RAVENS</span><b id="slotR">??</b></div>
+        <div class="slot slot--dash">–</div>
+        <div class="slot"><span>BENGALS</span><b id="slotB">??</b></div>
+      </div>
+      <p class="slot__mvp">Game MVP: <b id="slotMvp">???</b></p>
+      <div class="buttons"><button class="btn btn--big" id="spin">🎰 PULL THE LEVER</button></div>
+    </section>
+
+    <!-- ========== LORE ========== -->
+    <section class="panel" id="lore">
+      <h2><span class="emoji">📜</span> RAVENS LORE FOR THE KIDS (AND ADULTS WHO FORGOT)</h2>
+      <p class="small">Tap a card to flip it.</p>
+      <div class="flips">
+                {% for item in section.extra.lore %}
+        <button class="flip" type="button">
+          <span class="flip__inner">
+            <span class="flip__front">{{ item.title }}</span>
+            <span class="flip__back">{{ item.body }}</span>
+          </span>
+        </button>
+        {% endfor %}
+      </div>
+      <blockquote class="poe">
+        “Quoth the Raven, ‘Nevermore.’”
+        <cite>— Edgar Allan Poe, presumably about the Bengals' playoff chances</cite>
+      </blockquote>
+    </section>
+
+    <!-- ========== SHARE ========== -->
+    <section class="panel panel--share" id="share">
+      <h2><span class="emoji">📲</span> DEPLOY TO CALENDARS</h2>
+      <div class="buttons">
+        <button class="btn" id="icsBtn">📅 Add to Calendar (.ics)</button>
+        <a class="btn" id="gcalBtn" target="_blank" rel="noopener" href="#">🗓️ Google Calendar</a>
+        <button class="btn" id="shareBtn">🔗 Share This Masterpiece</button>
+      </div>
+      <p class="small" id="shareMsg"></p>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p class="footer__big">NEVERMORE<span class="blink">_</span></p>
+    <p>Lovingly, unreasonably over-engineered for one (1) afternoon of football.</p>
+    <p class="small">Built with Zola on {{ now() | date(format="%A, %B %-d %Y at %H:%M UTC") }} · Not affiliated with the Ravens, the NFL, CBS, or Edgar Allan Poe's estate.</p>
+  </footer>
+
+  <script>window.GAME = {
+    kickoff: "{{ config.extra.kickoff }}",
+    lat: {{ config.extra.lat }}, lon: {{ config.extra.lon }},
+    title: "Bengals @ Ravens — {{ config.extra.stadium }}",
+    address: "{{ config.extra.address }}",
+    url: "{{ config.base_url }}/"
+  };</script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script src="{{ get_url(path='js/chaos.js', cachebust=true) }}"></script>
+</body>
+</html>

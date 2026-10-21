@@ -1,0 +1,24 @@
+base_url = "https://jon6fingrs.github.io/ravens-game"
+title = "OPERATION: PURPLE SUNDAY"
+description = "A wildly over-engineered command center for one (1) Ravens game. Bengals at Ravens, Sun Oct 25, 2026, 1:00 PM ET, M&T Bank Stadium."
+compile_sass = false
+build_search_index = false
+generate_feeds = false
+
+[markdown]
+highlight_code = false
+
+[extra]
+# Kickoff in ISO-8601 with offset. Oct 25 2026 is still EDT (DST ends Nov 1).
+kickoff = "2026-10-25T13:00:00-04:00"
+kickoff_pretty = "Sunday, October 25, 2026 · 1:00 PM ET"
+opponent = "Cincinnati Bengals"
+week = "Week 7"
+ravens_record = "4-2"
+bengals_record = "3-2"
+tv = "CBS"
+tv_crew = "Jim Nantz (play-by-play), JJ Watt (analyst), Tracy Wolfson (sideline)"
+stadium = "M&T Bank Stadium"
+address = "1101 Russell St, Baltimore, MD 21230"
+lat = 39.2780
+lon = -76.6227
